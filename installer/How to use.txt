@@ -1,0 +1,26 @@
+MemeForge
+=========
+Make memes and GIFs on your PC. Open it from the Start menu.
+
+LIBRARY     Popular templates are downloaded for you (Imgflip, memegen.link) and refreshed
+            weekly. Add a free GIPHY key or Reddit app ID in Settings for trending GIFs and
+            Reddit templates. Search with Ctrl+F; online results from GIPHY/Reddit show on top.
+            Click a template to start. GIFs start with a caption bar; Shift-click for text boxes.
+            Drop or paste (Ctrl+V) your own images to add them.
+
+EDITOR      Type in the boxes on the left (Tab jumps to the next). Drag text and images on
+            the canvas; corner handles resize, the round handle rotates (Shift = 15° steps).
+            Double-click a picture to move/zoom it inside its frame.
+            Images tab: stickers, emoji, panel layouts (click an empty panel to fill it).
+            Canvas tab: crop, padding, background, animation speed.
+            Ctrl+Z / Ctrl+Y undo/redo, Ctrl+D duplicate, Del delete, arrows nudge.
+
+EXPORT      Copy (Ctrl+Shift+C or Ctrl+Enter) puts the meme on the clipboard - pictures as an
+            image, GIF/MP4 as a file so Discord and friends paste the animation.
+            Save (Ctrl+S) keeps it in your memes folder (Pictures\Memes by default).
+            MP4 needs FFmpeg; Settings can install it.
+
+QUICK MEME  Press Ctrl+Shift+M anywhere: search, Tab, type, Enter = meme on your clipboard.
+            Ctrl+E opens it in the full editor. MemeForge stays in the tray for this.
+
+MY MEMES    Everything you made, to copy again or keep editing.

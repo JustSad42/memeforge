@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemeForge</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="brand"><img src="logo.png" alt=""><span>Meme<b>Forge</b></span></div>
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-view="library"></button>
+      <button class="tab" data-view="editor"></button>
+      <button class="tab" data-view="history"></button>
+    </nav>
+    <div class="tb-spacer" data-tauri-drag-region></div>
+    <div class="tb-right">
+      <div class="hk-hint" id="hkHint" title="Quick meme from anywhere"></div>
+      <button class="icon-btn" id="btnSettings" title="Settings"></button>
+      <div style="width:8px"></div>
+      <button class="win-btn" id="wMin" title="Minimize"></button>
+      <button class="win-btn" id="wMax" title="Maximize"></button>
+      <button class="win-btn close" id="wClose" title="Close"></button>
+    </div>
+  </header>
+  <main>
+    <section class="view on" id="view-library"></section>
+    <section class="view" id="view-editor"></section>
+    <section class="view" id="view-history"></section>
+  </main>
+</div>
+<div id="toasts"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

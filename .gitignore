@@ -1,0 +1,8 @@
+# Only the app's source goes in the repo. Build output and local data stay local.
+/dist/
+/rust/target/
+/rust/gen/
+settings.json
+library/
+projects/
+graphify-out/

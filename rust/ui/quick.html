@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quick meme</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  html, body { background: transparent !important; }
+  .qp {
+    position: absolute; inset: 10px; border-radius: 18px; background: rgba(17, 17, 24, 0.97); border: 1px solid var(--line2);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); display: grid; grid-template-columns: 1fr 360px; overflow: hidden;
+    opacity: 0; transform: scale(0.98) translateY(6px); transition: opacity 0.16s, transform 0.2s var(--ease);
+  }
+  .qp.on { opacity: 1; transform: none; }
+  .ql { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); }
+  .qs { padding: 14px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid var(--line); }
+  .qs .search { max-width: none; }
+  .qs input { height: 42px; font-size: 15px; background: var(--bg2); }
+  .qgrid { flex: 1; overflow: auto; padding: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-content: start; }
+  .qi { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--surface2); border: 2px solid transparent; cursor: pointer; transition: border-color 0.12s, transform 0.12s; }
+  .qi img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .qi:hover { transform: scale(1.03); }
+  .qi.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
+  .qi .pill { position: absolute; left: 5px; top: 5px; }
+  .qr { display: flex; flex-direction: column; padding: 14px; gap: 12px; min-height: 0; }
+  .qprev { flex: 1; min-height: 0; display: grid; place-items: center; border-radius: 12px; background: conic-gradient(#22222b 25%, #2a2a33 0 50%, #22222b 0 75%, #2a2a33 0) 0 0/14px 14px; overflow: hidden; }
+  .qprev canvas { max-width: 100%; max-height: 100%; display: block; }
+  .qt { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qhint { display: flex; gap: 12px; color: var(--faint); font-size: 11.5px; flex-wrap: wrap; }
+  .qhint span { display: flex; gap: 4px; align-items: center; }
+  .qfields { display: grid; gap: 8px; }
+  .qdrag { position: absolute; left: 0; right: 0; top: 0; height: 10px; }
+</style>
+</head>
+<body>
+<div class="qp" id="qp">
+  <div class="ql">
+    <div class="qs" data-tauri-drag-region>
+      <div class="search grow"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><input class="input" id="q" placeholder="Find a meme or GIF…" autocomplete="off"></div>
+    </div>
+    <div class="qgrid" id="grid"></div>
+  </div>
+  <div class="qr">
+    <div class="row between"><div class="qt" id="title">Pick a meme</div><div class="seg" style="width:170px"><button data-m="text" class="on">Text</button><button data-m="caption">Caption</button></div></div>
+    <div class="qprev"><canvas id="cv"></canvas></div>
+    <div class="qfields" id="fields"></div>
+    <div class="row"><button class="btn primary grow big" id="copy"></button><button class="btn big" id="edit" title="Open in the editor (Ctrl+E)"></button></div>
+    <div class="qhint"><span><kbd>Tab</kbd> type</span><span><kbd>Enter</kbd> copy</span><span><kbd>Ctrl E</kbd> editor</span><span><kbd>Esc</kbd> close</span></div>
+  </div>
+</div>
+<div id="toasts"></div>
+<script type="module" src="quick.js"></script>
+</body>
+</html>

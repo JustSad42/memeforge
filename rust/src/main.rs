@@ -72,6 +72,16 @@ fn handle(cmd: &str, a: Value) -> Result<Value, String> {
             if s.start_with_windows != old.start_with_windows {
                 settings::set_autostart(s.start_with_windows);
             }
+            // a new key or a newly enabled source: fetch from it now rather than at the next weekly refresh
+            let giphy_on = |x: &settings::Settings| x.src_giphy && !x.giphy_key.trim().is_empty();
+            let reddit_on = |x: &settings::Settings| x.src_reddit && !x.reddit_client_id.trim().is_empty();
+            let new_source = (giphy_on(&s) && (!giphy_on(&old) || s.giphy_key != old.giphy_key))
+                || (reddit_on(&s) && (!reddit_on(&old) || s.reddit_client_id != old.reddit_client_id || s.reddit_subs != old.reddit_subs))
+                || (s.src_imgflip && !old.src_imgflip)
+                || (s.src_memegen && !old.src_memegen);
+            if new_source && !sources::RUNNING.load(std::sync::atomic::Ordering::SeqCst) {
+                start_refresh();
+            }
             if s.hotkey != old.hotkey || s.hotkey_enabled != old.hotkey_enabled {
                 if let Some(app) = APP.get() {
                     if let Err(e) = register_hotkey(app) {

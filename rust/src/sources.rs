@@ -381,7 +381,7 @@ pub fn refresh(progress: &(dyn Fn(Value) + Sync)) -> Value {
                 failed.fetch_add(1, Ordering::Relaxed);
             }
             let d = done.fetch_add(1, Ordering::Relaxed) + 1;
-            if d % 5 == 0 || d == total {
+            if d.is_multiple_of(5) || d == total {
                 set(json!({"running": true, "phase": "Downloading", "done": d, "total": total, "title": c.title}));
             }
         })

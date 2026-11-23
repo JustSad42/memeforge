@@ -163,7 +163,7 @@ fn handle(cmd: &str, a: Value) -> Result<Value, String> {
             let src = PathBuf::from(arg_str(&a, "path"));
             let ext = src.extension().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
             let name = src.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
-            match rfd::FileDialog::new().set_file_name(&name).add_filter(&ext.to_uppercase(), &[&ext]).save_file() {
+            match rfd::FileDialog::new().set_file_name(&name).add_filter(ext.to_uppercase(), &[&ext]).save_file() {
                 Some(dst) => {
                     std::fs::copy(&src, &dst).map_err(|e| e.to_string())?;
                     json!({"path": dst.to_string_lossy()})

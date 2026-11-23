@@ -55,10 +55,10 @@ fn quantizer(frames: &[(Vec<u8>, u32)]) -> (Vec<u8>, Vec<u8>, bool) {
     let mut has_alpha = false;
     let mut k = 0usize;
     for (f, _) in frames {
-        for px in f.chunks_exact(4) {
+        for px in f.as_chunks::<4>().0 {
             if px[3] < 128 {
                 has_alpha = true;
-            } else if k % step == 0 {
+            } else if k.is_multiple_of(step) {
                 sample.extend_from_slice(&[px[0], px[1], px[2], 255]);
             }
             k += 1;
@@ -247,7 +247,7 @@ pub fn encode_mp4(job: &Job, out: &Path) -> Result<(), String> {
             }
             // MP4 has no transparency: put see-through pixels on white
             let f = &job.frames[fi].0;
-            for (o, p) in white.chunks_exact_mut(4).zip(f.chunks_exact(4)) {
+            for (o, p) in white.as_chunks_mut::<4>().0.iter_mut().zip(f.chunks_exact(4)) {
                 let a = p[3] as u32;
                 for c in 0..3 {
                     o[c] = ((p[c] as u32 * a + 255 * (255 - a)) / 255) as u8;
@@ -393,7 +393,7 @@ mod tests {
         let mut frames = Vec::new();
         for k in 0..4u8 {
             let mut f = vec![0u8; (w * h * 4) as usize];
-            for (i, p) in f.chunks_exact_mut(4).enumerate() {
+            for (i, p) in f.as_chunks_mut::<4>().0.iter_mut().enumerate() {
                 p.copy_from_slice(&[(i % 255) as u8, k * 60, 128, 255]);
             }
             frames.push((f, 80));
@@ -430,7 +430,7 @@ mod tests {
         let fr: Vec<_> = dec.into_frames().collect::<Result<_, _>>().unwrap();
         for (n, f) in fr.iter().enumerate() {
             let p = f.buffer().get_pixel(150, 130);
-            let want = [(30 + 130 / 3) as i32, 120, (200 - 130 / 3) as i32];
+            let want = [30 + 130 / 3, 120, 200 - 130 / 3];
             for c in 0..3 {
                 assert!((p[c] as i32 - want[c]).abs() < 20, "frame {n} pixel {:?} want {:?}", p, want);
             }

@@ -2,6 +2,8 @@
 
 A fast meme and GIF maker for Windows, written in Rust (Tauri 2 + WebView2).
 
+![MemeForge library: popular templates and trending GIFs, with filters and sources on the left](docs/screenshots/library.webp)
+
 - **Library** of popular templates, downloaded and refreshed weekly: Imgflip and memegen.link out of the box, trending GIFs from GIPHY and templates from Reddit with a free key/app ID. Search everything, including online results.
 - **Editor**: any number of text boxes (classic Impact with outline, or any font), drag / resize / rotate with snapping, caption bar for GIFs, image and PNG stickers, emoji, panel layouts, crop, padding, animation speed, undo/redo.
 - **Animated memes**: put text and stickers on GIFs; export GIF (one shared palette + only-changed-pixels frames, so files stay small) or MP4 (via FFmpeg).
@@ -9,6 +11,15 @@ A fast meme and GIF maker for Windows, written in Rust (Tauri 2 + WebView2).
 - **Quick meme hotkey** (Ctrl+Shift+M): search a template, type, Enter. Done.
 - **My memes**: everything you made, to copy again or keep editing.
 - Self-updates from GitHub releases.
+
+## How it works
+
+| | |
+|---|---|
+| ![Editing the Drake template with two text boxes](docs/screenshots/editor.webp) | ![A GIF with a caption bar above it](docs/screenshots/gif-caption.png) |
+| **1. Pick a template and type.** Text fits its box automatically; drag, resize or rotate anything on the canvas, then **Copy** puts the meme on the clipboard. | **2. Caption a GIF.** Turn on the caption bar, type, and export as a small GIF or MP4. Discord pastes the animation. |
+| ![The quick-meme popup with the Two Buttons template](docs/screenshots/quick-meme.png) | |
+| **3. Or skip the window.** Ctrl+Shift+M opens the quick popup from anywhere: search, type, Enter copies it. Ctrl+E moves it to the full editor. | |
 
 ## Install
 

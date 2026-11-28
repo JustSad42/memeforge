@@ -2377,6 +2377,8 @@ dependencies = [
  "tauri-plugin-single-instance",
  "ureq",
  "urlencoding",
+ "webview2-com",
+ "windows-core",
  "winreg 0.55.0",
 ]
 

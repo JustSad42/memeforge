@@ -3,6 +3,7 @@
 //!   MemeForge.exe --tray    start in the background (tray icon + quick-meme hotkey)
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod sleep;
 mod export;
 mod library;
 mod settings;
@@ -28,9 +29,14 @@ fn arg_str<'a>(a: &'a Value, k: &str) -> &'a str {
     a[k].as_str().unwrap_or("")
 }
 
+/// Hidden windows are asleep (see `sleep`) and refresh themselves when shown.
 fn emit(ev: &str, v: Value) {
     if let Some(app) = APP.get() {
-        let _ = app.emit(ev, v);
+        for (label, w) in app.webview_windows() {
+            if w.is_visible().unwrap_or(true) {
+                let _ = app.emit_to(label, ev, v.clone());
+            }
+        }
     }
 }
 
@@ -218,7 +224,7 @@ fn handle(cmd: &str, a: Value) -> Result<Value, String> {
         "update_install" => json!(updater::install(&|m| emit("update-progress", json!(m)))?),
         "quick_hide" => {
             if let Some(w) = APP.get().and_then(|a| a.get_webview_window("quick")) {
-                let _ = w.hide();
+                put_away(&w);
             }
             json!(true)
         }
@@ -228,7 +234,7 @@ fn handle(cmd: &str, a: Value) -> Result<Value, String> {
                 let payload = a.clone();
                 let _ = app.run_on_main_thread(move || {
                     if let Some(w) = app2.get_webview_window("quick") {
-                        let _ = w.hide();
+                        put_away(&w);
                     }
                     if app2.get_webview_window("main").is_some() {
                         open_window(&app2);
@@ -346,11 +352,24 @@ fn save_geometry(w: &WebviewWindow) {
     let _ = settings::write_atomic(&geometry_file(), g.to_string().as_bytes());
 }
 
+/// Hides a window and lets its web view sleep.
+fn put_away(w: &WebviewWindow) {
+    let _ = w.eval("window.__quickHidden && window.__quickHidden()"); // the quick window stops its preview loop
+    let _ = w.hide();
+    sleep::later(w, std::time::Duration::from_secs(5));
+}
+
 pub fn open_window(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
+        let was_hidden = !w.is_visible().unwrap_or(true);
+        sleep::wake(&w);
         let _ = w.unminimize();
         let _ = w.show();
         let _ = w.set_focus();
+        if was_hidden {
+            // It may have missed library changes while asleep.
+            let _ = app.emit_to("main", "library-changed", json!({}));
+        }
         return;
     }
     let (mut lw, mut lh) = (1440.0_f64, 900.0_f64);
@@ -389,12 +408,14 @@ pub fn open_window(app: &AppHandle) {
     }
     let w2 = w.clone();
     w.on_window_event(move |ev| {
+        if let WindowEvent::Focused(true) = ev {
+            sleep::focused(&w2);
+        }
         if let WindowEvent::CloseRequested { api, .. } = ev {
             save_geometry(&w2);
             if settings::load().close_to_tray {
                 api.prevent_close();
-                let _ = w2.hide();
-                let _ = w2.eval("window.__hidden && window.__hidden()");
+                put_away(&w2);
             }
         }
     });
@@ -423,9 +444,10 @@ fn build_quick(app: &AppHandle) -> Option<WebviewWindow> {
 fn toggle_quick(app: &AppHandle) {
     let Some(w) = build_quick(app) else { return };
     if w.is_visible().unwrap_or(false) && w.is_focused().unwrap_or(false) {
-        let _ = w.hide();
+        put_away(&w);
         return;
     }
+    sleep::wake(&w);
     // centre it on the monitor the mouse is on
     if let Ok(pos) = app.cursor_position() {
         if let Ok(mons) = app.available_monitors() {
@@ -552,7 +574,12 @@ fn main() {
                 std::thread::sleep(std::time::Duration::from_millis(2500));
                 let h2 = h.clone();
                 let _ = h.run_on_main_thread(move || {
-                    build_quick(&h2);
+                    if let Some(w) = build_quick(&h2) {
+                        if !w.is_visible().unwrap_or(true) {
+                            // long enough for its page to load
+                            sleep::later(&w, std::time::Duration::from_secs(20));
+                        }
+                    }
                 });
             });
             background_jobs();

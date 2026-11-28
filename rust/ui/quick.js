@@ -75,6 +75,7 @@ function apply() {
   if (st.mode === "caption") st.scene.caption.text = st.texts[0] || "";
   else st.scene.layers.filter((l) => l.type === "text").forEach((l, i) => (l.text = st.texts[i] || ""));
   draw(0);
+  kick(); // media may have just loaded and turned out animated
 }
 
 function draw(t) {
@@ -94,13 +95,19 @@ function draw(t) {
   renderScene(ctx, st.scene, st.media, t, { placeholders: true });
 }
 
-(function loop(now) {
-  if (st.scene && document.visibilityState === "visible") {
-    const tl = timeline(st.scene, st.media);
-    if (tl) draw((now - st.t0) % tl.duration);
-  }
-  requestAnimationFrame(loop);
-})(performance.now());
+// This window is built hidden at startup and a hidden WebView2 still reports "visible", so animate only
+// between __quickShown() and hide(), and only while the picked meme actually moves. kick() restarts it.
+let shown = false, raf = 0;
+function kick() { if (!raf && shown && st.scene && !document.hidden) raf = requestAnimationFrame(loop); }
+function loop(now) {
+  raf = 0;
+  if (!shown || !st.scene || document.hidden) return;
+  const tl = timeline(st.scene, st.media);
+  if (!tl) return; // still image: apply() already drew it
+  raf = requestAnimationFrame(loop);
+  draw((now - st.t0) % tl.duration);
+}
+document.addEventListener("visibilitychange", kick);
 
 function setMode(m, rebuild = true) {
   st.mode = m;
@@ -136,10 +143,12 @@ async function copy() {
 function openEditor() {
   if (!st.scene) return;
   apply();
+  shown = false; // Rust hides this window when the editor opens
   call("open_editor", { scene: st.scene });
 }
 
 function hide() {
+  shown = false;
   $("#qp").classList.remove("on");
   setTimeout(() => call("quick_hide"), 120);
   $("#copy").innerHTML = `${icon("clipboard", 17)}Copy meme`;
@@ -166,12 +175,15 @@ addEventListener("keydown", (e) => {
 addEventListener("blur", () => { if (!st.busy) setTimeout(() => { if (!document.hasFocus()) hide(); }, 150); });
 
 window.__quickShown = async () => {
+  shown = true;
+  kick();
   $("#qp").classList.add("on");
   st.texts = [];
   $("#q").value = "";
   await refresh();
   $("#q").focus();
 };
+window.__quickHidden = () => { shown = false; };
 listen("library-changed", refresh);
 refresh().then(() => $("#qp").classList.add("on"));
 void win;

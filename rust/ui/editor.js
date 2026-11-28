@@ -136,7 +136,8 @@ export function initEditor(e) {
   setupDrop();
   addEventListener("keydown", onKey);
   addEventListener("paste", onPaste);
-  requestAnimationFrame(loop);
+  document.addEventListener("visibilitychange", kick);
+  kick();
   renderLeft();
   renderInspector();
 }
@@ -275,25 +276,32 @@ function draw() {
   ctx.setTransform(S.view.s * dpr, 0, 0, S.view.s * dpr, 0, 0);
   S.lay = renderScene(ctx, S.scene, S.media, S.t, { placeholders: true });
   drawOverlay();
+  kick();
 }
 
+// The playback loop runs only while a GIF/video is actually playing on screen; otherwise it stops,
+// and kick() (called from draw(), play, crop end and visibility changes) starts it again.
+let raf = 0;
+const wantsFrames = () => S.playing && isAnimated() && S.mode !== "crop" && !document.hidden;
+function kick() { if (!raf && wantsFrames()) raf = requestAnimationFrame(loop); }
+
 function loop(now) {
-  if (S.playing && isAnimated() && S.mode !== "crop" && !document.hidden) {
-    const tl = timeline(S.scene, S.media);
-    if (tl) {
-      S.t = (now - S.t0) % tl.duration;
-      draw();
-      const sc = $("#scrub");
-      if (sc) sc.value = Math.round((S.t / tl.duration) * 1000);
-      $("#tc").textContent = `${(S.t / 1000).toFixed(2)} / ${(tl.duration / 1000).toFixed(2)} s`;
-    }
+  raf = 0;
+  if (!wantsFrames()) return;
+  raf = requestAnimationFrame(loop); // book the next frame first so draw()'s kick() doesn't double it
+  const tl = timeline(S.scene, S.media);
+  if (tl) {
+    S.t = (now - S.t0) % tl.duration;
+    draw();
+    const sc = $("#scrub");
+    if (sc) sc.value = Math.round((S.t / tl.duration) * 1000);
+    $("#tc").textContent = `${(S.t / 1000).toFixed(2)} / ${(tl.duration / 1000).toFixed(2)} s`;
   }
-  requestAnimationFrame(loop);
 }
 
 function togglePlay() {
   S.playing = !S.playing;
-  if (S.playing) S.t0 = performance.now() - S.t;
+  if (S.playing) { S.t0 = performance.now() - S.t; kick(); }
   $("#bPlay").innerHTML = icon(S.playing ? "pause" : "play");
 }
 
@@ -581,6 +589,7 @@ function startCrop() {
 function endCrop(apply) {
   const c = S.crop;
   S.mode = null;
+  kick();
   $("#bCrop").classList.remove("on");
   $(".crop-bar")?.remove();
   if (apply && c && (c.x || c.y || c.w !== S.scene.w || c.h !== S.scene.h)) {

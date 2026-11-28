@@ -48,6 +48,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
+name = "app-update"
+version = "1.0.0"
+source = "git+https://github.com/JustSad42/app-update?tag=v1.0.0#d8ee8bec6b06528490fc7aa3cf90865281c2b97d"
+dependencies = [
+ "serde_json",
+ "sha2 0.10.9",
+ "ureq",
+]
+
+[[package]]
 name = "ashpd"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2355,8 +2365,9 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "memeforge"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
+ "app-update",
  "chrono",
  "clipboard-win",
  "color_quant",
